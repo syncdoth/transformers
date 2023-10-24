@@ -504,6 +504,7 @@ _import_structure = {
     "models.regnet": ["REGNET_PRETRAINED_CONFIG_ARCHIVE_MAP", "RegNetConfig"],
     "models.rembert": ["REMBERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "RemBertConfig"],
     "models.resnet": ["RESNET_PRETRAINED_CONFIG_ARCHIVE_MAP", "ResNetConfig"],
+    "models.retnet": ["RETNET_PRETRAINED_CONFIG_ARCHIVE_MAP", "RetNetConfig"],
     "models.roberta": ["ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP", "RobertaConfig", "RobertaTokenizer"],
     "models.roberta_prelayernorm": ["ROBERTA_PRELAYERNORM_PRETRAINED_CONFIG_ARCHIVE_MAP", "RobertaPreLayerNormConfig"],
     "models.roc_bert": ["ROC_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "RoCBertConfig", "RoCBertTokenizer"],
@@ -2620,6 +2621,15 @@ else:
             "ResNetPreTrainedModel",
         ]
     )
+    _import_structure["models.retnet"].extend(
+        [
+            "RETNET_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "RetNetForCausalLM",
+            "RetNetForSequenceClassification",
+            "RetNetModel",
+            "RetNetPreTrainedModel",
+        ]
+    )
     _import_structure["models.roberta"].extend(
         [
             "ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST",
@@ -4666,6 +4676,7 @@ if TYPE_CHECKING:
     from .models.regnet import REGNET_PRETRAINED_CONFIG_ARCHIVE_MAP, RegNetConfig
     from .models.rembert import REMBERT_PRETRAINED_CONFIG_ARCHIVE_MAP, RemBertConfig
     from .models.resnet import RESNET_PRETRAINED_CONFIG_ARCHIVE_MAP, ResNetConfig
+    from .models.retnet import RETNET_PRETRAINED_CONFIG_ARCHIVE_MAP, RetNetConfig
     from .models.roberta import ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP, RobertaConfig, RobertaTokenizer
     from .models.roberta_prelayernorm import (
         ROBERTA_PRELAYERNORM_PRETRAINED_CONFIG_ARCHIVE_MAP,
@@ -6455,6 +6466,15 @@ if TYPE_CHECKING:
             ResNetModel,
             ResNetPreTrainedModel,
         )
+
+        # PyTorch model imports
+        from .models.retnet import (
+            RETNET_PRETRAINED_MODEL_ARCHIVE_LIST,
+            RetNetForCausalLM,
+            RetNetForSequenceClassification,
+            RetNetModel,
+            RetNetPreTrainedModel,
+        )
         from .models.roberta import (
             ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST,
             RobertaForCausalLM,
@@ -6515,8 +6535,6 @@ if TYPE_CHECKING:
             SamModel,
             SamPreTrainedModel,
         )
-
-        # PyTorch model imports
         from .models.seamless_m4t import (
             SEAMLESS_M4T_PRETRAINED_MODEL_ARCHIVE_LIST,
             SeamlessM4TCodeHifiGan,
