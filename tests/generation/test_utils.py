@@ -1411,8 +1411,8 @@ class GenerationTesterMixin:
     def test_contrastive_generate(self):
         # check `generate()` and `contrastive_search()` are equal
         for model_class in self.all_generative_model_classes:
-            # won't fix: FSMT and Reformer have a different cache variable type (and format).
-            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer"]):
+            # won't fix: FSMT, Reformer, and NucleusX have a different cache variable type (and format).
+            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer", "nucleusx"]):
                 return
 
             config, input_ids, attention_mask, max_length = self._get_input_ids_and_config()
@@ -1432,8 +1432,8 @@ class GenerationTesterMixin:
 
     def test_contrastive_generate_dict_outputs_use_cache(self):
         for model_class in self.all_generative_model_classes:
-            # won't fix: FSMT and Reformer have a different cache variable type (and format).
-            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer"]):
+            # won't fix: FSMT, Reformer, and NucleusX have a different cache variable type (and format).
+            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer", "nucleusx"]):
                 return
 
             # enable cache
@@ -1465,10 +1465,10 @@ class GenerationTesterMixin:
     def test_contrastive_generate_low_memory(self):
         # Check that choosing 'low_memory' does not change the model output
         for model_class in self.all_generative_model_classes:
-            # won't fix: FSMT, Reformer, gptbigcode, and speech2text have a different cache variable type (and format).
+            # won't fix: FSMT, Reformer, gptbigcode, speech2text, and NucleusX have a different cache variable type (and format).
             if any(
                 model_name in model_class.__name__.lower()
-                for model_name in ["fsmt", "reformer", "gptbigcode", "speech2text"]
+                for model_name in ["fsmt", "reformer", "gptbigcode", "speech2text", "nucleusx"]
             ):
                 return
 
@@ -1515,8 +1515,8 @@ class GenerationTesterMixin:
         # - assisted_decoding does not support `batch_size > 1`
 
         for model_class in self.all_generative_model_classes:
-            # won't fix: FSMT and Reformer have a different cache variable type (and format).
-            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer"]):
+            # won't fix: FSMT, Reformer, and NucleusX have a different cache variable type (and format).
+            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer", "nucleusx"]):
                 return
             # may fix in the future: the following models fail with assisted decoding, and need model-specific fixes
             if any(
@@ -1582,8 +1582,8 @@ class GenerationTesterMixin:
         # exact same logits (the forward pass of the main model, now with several tokens at once, has causal masking).
 
         for model_class in self.all_generative_model_classes:
-            # won't fix: FSMT and Reformer have a different cache variable type (and format).
-            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer"]):
+            # won't fix: FSMT, Reformer, and NucleusX have a different cache variable type (and format).
+            if any(model_name in model_class.__name__.lower() for model_name in ["fsmt", "reformer", "nucleusx"]):
                 return
             # may fix in the future: the following models fail with assisted decoding, and need model-specific fixes
             if any(
