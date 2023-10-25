@@ -762,7 +762,10 @@ class GenerationTesterMixin:
             self.assertListEqual(output_generate.sequences.tolist(), output_greedy.sequences.tolist())
 
             for output in (output_greedy, output_generate):
-                self._check_outputs(output, input_ids, model.config, use_cache=True)
+                # since NucleusX model uses an RNN style cache during generation, attention weight can't be computed after
+                # the first step. Skip attention check for NucleusX model.
+                skip_attention = any(model_name in model_class.__name__.lower() for model_name in ("nucleusx",))
+                self._check_outputs(output, input_ids, model.config, use_cache=True, skip_attention=skip_attention)
 
     def test_sample_generate(self):
         for model_class in self.all_generative_model_classes:
@@ -1014,8 +1017,16 @@ class GenerationTesterMixin:
             self.assertListEqual(output_generate.sequences.tolist(), output_beam.sequences.tolist())
 
             for output in (output_beam, output_generate):
+                # since NucleusX model uses an RNN style cache during generation, attention weight can't be computed after
+                # the first step. Skip attention check for NucleusX model.
+                skip_attention = any(model_name in model_class.__name__.lower() for model_name in ("nucleusx",))
                 self._check_outputs(
-                    output, input_ids, model.config, use_cache=True, num_return_sequences=beam_scorer.num_beams
+                    output,
+                    input_ids,
+                    model.config,
+                    use_cache=True,
+                    num_return_sequences=beam_scorer.num_beams,
+                    skip_attention=skip_attention,
                 )
 
     @require_accelerate
@@ -1822,7 +1833,7 @@ class GenerationTesterMixin:
                 outputs_from_embeds_wo_ids[:, 1:].tolist(),
             )
 
-    def _check_outputs(self, output, input_ids, config, use_cache=False, num_return_sequences=1):
+    def _check_outputs(self, output, input_ids, config, use_cache=False, num_return_sequences=1, skip_attention=False):
         batch_size, seq_length = input_ids.shape
         num_sequences_in_output = batch_size * num_return_sequences
         gen_len = (
@@ -1833,30 +1844,31 @@ class GenerationTesterMixin:
         self._check_scores(num_sequences_in_output, output.scores, length=gen_len, config=config)
 
         # Attentions
-        if config.is_encoder_decoder:
-            # encoder
-            self._check_encoder_attention_for_generate(output.encoder_attentions, batch_size, config, seq_length)
-            # decoder
-            self._check_attentions_for_generate(
-                num_sequences_in_output,
-                output.decoder_attentions,
-                min_length=1,
-                max_length=output.sequences.shape[-1],
-                config=config,
-                use_cache=use_cache,
-            )
-        else:
-            # if use_cache first input is equal to no use_cache, so skip here
-            attentions = output.attentions if not use_cache else output.attentions[1:]
-            min_length = seq_length if not use_cache else seq_length + 1
-            self._check_attentions_for_generate(
-                num_sequences_in_output,
-                attentions=attentions,
-                min_length=min_length,
-                max_length=output.sequences.shape[-1],
-                config=config,
-                use_cache=use_cache,
-            )
+        if not skip_attention:
+            if config.is_encoder_decoder:
+                # encoder
+                self._check_encoder_attention_for_generate(output.encoder_attentions, batch_size, config, seq_length)
+                # decoder
+                self._check_attentions_for_generate(
+                    num_sequences_in_output,
+                    output.decoder_attentions,
+                    min_length=1,
+                    max_length=output.sequences.shape[-1],
+                    config=config,
+                    use_cache=use_cache,
+                )
+            else:
+                # if use_cache first input is equal to no use_cache, so skip here
+                attentions = output.attentions if not use_cache else output.attentions[1:]
+                min_length = seq_length if not use_cache else seq_length + 1
+                self._check_attentions_for_generate(
+                    num_sequences_in_output,
+                    attentions=attentions,
+                    min_length=min_length,
+                    max_length=output.sequences.shape[-1],
+                    config=config,
+                    use_cache=use_cache,
+                )
 
         # Hidden States
         if config.is_encoder_decoder:
