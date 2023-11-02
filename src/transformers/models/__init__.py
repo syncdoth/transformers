@@ -174,6 +174,7 @@ from . import (
     regnet,
     rembert,
     resnet,
+    retnet,
     roberta,
     roberta_prelayernorm,
     roc_bert,
