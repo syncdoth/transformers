@@ -45,6 +45,7 @@ from ...activations import get_activation
 from ...modeling_outputs import ModelOutput
 from ...modeling_utils import PreTrainedModel
 from ...utils import (
+    add_code_sample_docstrings,
     add_start_docstrings,
     add_start_docstrings_to_model_forward,
     logging,
@@ -64,9 +65,13 @@ from .configuration_nucleus_x import NucleusXConfig
 
 logger = logging.get_logger(__name__)
 
+_CHECKPOINT_FOR_DOC = "NucleusAI/NucleusX-7B"
 _CONFIG_FOR_DOC = "NucleusXConfig"
 
-NUCLEUS_X_PRETRAINED_MODEL_ARCHIVE_LIST = []
+NUCLEUS_X_PRETRAINED_MODEL_ARCHIVE_LIST = [
+    "NucleusAI/NucleusX-7B",
+    "NucleusAI/NucleusX-13B",
+]
 
 
 def split_heads(tensors, bsz, seqlen, num_heads):
@@ -937,6 +942,11 @@ class NucleusXModel(NucleusXPreTrainedModel):
         return embed
 
     @add_start_docstrings_to_model_forward(NUCLEUS_X_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @add_code_sample_docstrings(
+        checkpoint=_CHECKPOINT_FOR_DOC,
+        output_type=NucleusXOutputWithPast,
+        config_class=_CONFIG_FOR_DOC,
+    )
     def forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -1330,6 +1340,11 @@ class NucleusXForSequenceClassification(NucleusXPreTrainedModel):
         self.model.embed_tokens = value
 
     @add_start_docstrings_to_model_forward(NUCLEUS_X_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @add_code_sample_docstrings(
+        checkpoint=_CHECKPOINT_FOR_DOC,
+        output_type=NucleusXClassifierOutputWithPast,
+        config_class=_CONFIG_FOR_DOC,
+    )
     def forward(
         self,
         input_ids: torch.LongTensor = None,

@@ -21,11 +21,11 @@
 # SOFTWARE.
 """ Testing suite for the PyTorch NucleusX model. """
 
-
+import gc
 import unittest
 
-from transformers import NucleusXConfig, is_torch_available
-from transformers.testing_utils import require_torch, torch_device
+from transformers import AutoTokenizer, NucleusXConfig, is_torch_available
+from transformers.testing_utils import require_torch, slow, torch_device
 
 from ...generation.test_utils import GenerationTesterMixin
 from ...test_configuration_common import ConfigTester
@@ -389,3 +389,44 @@ class NucleusXModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterM
     @unittest.skip("NucleusX uses dictionary style KV cache, which is a non standard format")
     def test_past_key_values_format(self):
         pass
+
+
+@require_torch
+class NucleusXIntegrationTest(unittest.TestCase):
+    @slow
+    def test_model_7b_logits(self):
+        input_ids = [1, 306, 4658, 278, 6593, 310, 2834, 338]
+        model = NucleusXForCausalLM.from_pretrained("NucleusAI/NucleusX-7B", device_map="auto")
+        input_ids = torch.tensor([input_ids]).to(model.model.embed_tokens.weight.device)
+        with torch.no_grad():
+            out = model(input_ids).logits.cpu()
+        # Expected mean on dim = -1
+        EXPECTED_MEAN = torch.tensor([[-2.5548, -2.5737, -3.0600, -2.5906, -2.8478, -2.8118, -2.9325, -2.7694]])
+        torch.testing.assert_close(out.mean(-1), EXPECTED_MEAN, atol=1e-2, rtol=1e-2)
+        # slicing logits[0, 0, 0:30]
+        # fmt: off
+        EXPECTED_SLICE = torch.tensor([-5.8781, -5.8616, -0.1052, -4.7200, -5.8781, -5.8774, -5.8773, -5.8777, -5.8781, -5.8780, -5.8781, -5.8779, -1.0787,  1.7583, -5.8779, -5.8780, -5.8783, -5.8778, -5.8776, -5.8781, -5.8784, -5.8778, -5.8778, -5.8777, -5.8779, -5.8778, -5.8776, -5.8780, -5.8779, -5.8781])
+        # fmt: on
+        print(out[0, 0, :30])
+        torch.testing.assert_close(out[0, 0, :30], EXPECTED_SLICE, atol=1e-4, rtol=1e-4)
+
+        del model
+        torch.cuda.empty_cache()
+        gc.collect()
+
+    @slow
+    def test_model_7b_generation(self):
+        EXPECTED_TEXT_COMPLETION = """My favourite condiment is 100% ketchup. I love it on everything. I’m not a big"""
+        prompt = "My favourite condiment is "
+        tokenizer = AutoTokenizer.from_pretrained("NucleusAI/NucleusX-7B", use_fast=False)
+        model = NucleusXForCausalLM.from_pretrained("NucleusAI/NucleusX-7B", device_map="auto")
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.model.embed_tokens.weight.device)
+
+        # greedy generation outputs
+        generated_ids = model.generate(input_ids, max_new_tokens=20, temperature=0)
+        text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+        self.assertEqual(EXPECTED_TEXT_COMPLETION, text)
+
+        del model
+        torch.cuda.empty_cache()
+        gc.collect()

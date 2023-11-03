@@ -34,14 +34,18 @@ from ...utils import logging
 
 logger = logging.get_logger(__name__)
 
-NUCLEUS_X_PRETRAINED_CONFIG_ARCHIVE_MAP = {}
+NUCLEUS_X_PRETRAINED_CONFIG_ARCHIVE_MAP = {
+    "NucleusAI/NucleusX-7B": "https://huggingface.co/NucleusAI/NucleusX-7B/resolve/main/config.json",
+    "NucleusAI/NucleusX-13B": "https://huggingface.co/NucleusAI/NucleusX-13B/resolve/main/config.json",
+}
 
 
 class NucleusXConfig(PretrainedConfig):
     r"""
     This is the configuration class to store the configuration of a [`~NucleusXModel`]. It is used to instantiate an
     NucleusX model according to the specified arguments, defining the model architecture. Instantiating a configuration
-    with the defaults will yield a configuration of size 7B parameters.
+    with the defaults will yield a similar configuration to that of the NucleusX-7b
+    [nucleus_x-7b](https://huggingface.co/NucleusAI/NucleusX-7B) architecture.
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
